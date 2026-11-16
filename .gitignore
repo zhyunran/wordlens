@@ -1,0 +1,32 @@
+# Build artifacts
+bin/
+obj/
+publish/
+dist/
+packaging/
+_recovery/
+reports/
+*.user
+*.suo
+*.pdb
+
+# Downloaded and generated dictionary data
+data/raw/
+data/build/
+
+# Local test environment / logs
+tests/devhome/
+tests/artifacts/
+tests/*.png
+tests/*.json
+
+# Scratch folders used while packaging / publishing (not part of the source tree)
+_work/
+_release/
+_orig/
+*.log
+docs/_*/
+
+# OS noise
+Thumbs.db
+.DS_Store

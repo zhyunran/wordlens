@@ -1,0 +1,184 @@
+<Window x:Class="WordLens.UI.PopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WordLens"
+        Width="480" SizeToContent="Height" MaxHeight="440"
+        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}"
+        ShowInTaskbar="False" ShowActivated="False" Topmost="True"
+        ResizeMode="NoResize" WindowStartupLocation="Manual" Opacity="0"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display">
+    <Window.Resources>
+        <SolidColorBrush x:Key="InkBrush" Color="#0F172A" />
+        <SolidColorBrush x:Key="MutedBrush" Color="#64748B" />
+        <SolidColorBrush x:Key="SoftBrush" Color="#94A3B8" />
+        <SolidColorBrush x:Key="BodyBrush" Color="#1E293B" />
+
+        <Style x:Key="IconBtn" TargetType="Button">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="3,0,0,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" CornerRadius="16" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F1F5F9" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E2E8F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TextActionBtn" TargetType="Button">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="#475569" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" CornerRadius="8" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F1F5F9" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E2E8F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ChipBtn" TargetType="Button">
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="Padding" Value="9,3,9,4" />
+            <Setter Property="Background" Value="#F1F5F9" />
+            <Setter Property="Foreground" Value="#334155" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" CornerRadius="8" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E2E8F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="26">
+        <Border x:Name="Card" CornerRadius="16" Background="#FFFFFF"
+                BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="30" ShadowDepth="6" Opacity="0.20" Color="#0F172A" />
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- header -->
+                <Grid Grid.Row="0" Margin="24,20,16,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock x:Name="WordText" FontFamily="Segoe UI Variable Display, Segoe UI, Microsoft YaHei UI"
+                                   FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource InkBrush}"
+                                   TextWrapping="Wrap" LineHeight="36" />
+                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                            <TextBlock x:Name="PhoneticText" FontFamily="Segoe UI, Microsoft YaHei UI"
+                                       FontSize="14.5" Foreground="{StaticResource MutedBrush}"
+                                       VerticalAlignment="Center" />
+                            <Border x:Name="LangBadge" Margin="10,1,0,0" Padding="7,1,7,2" CornerRadius="8"
+                                    Background="#EEF2FF" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock x:Name="LangText" FontSize="10.5" FontWeight="SemiBold" Foreground="#4F46E5" />
+                            </Border>
+                            <Border x:Name="InflectionBadge" Margin="10,1,0,0" Padding="7,1,7,2" CornerRadius="8"
+                                    Background="#FFF7ED" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock x:Name="InflectionText" FontSize="10.5" FontWeight="SemiBold" Foreground="#C2410C" />
+                            </Border>
+                        </StackPanel>
+                        <WrapPanel x:Name="TagsPanel" Margin="0,9,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                        <Button x:Name="SpeakerButton" Style="{StaticResource IconBtn}" ToolTip="朗读发音">
+                            <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="17"
+                                       Foreground="#475569" Text="&#xE767;" />
+                        </Button>
+                        <Button x:Name="CloseButton" Style="{StaticResource IconBtn}" ToolTip="关闭 (Esc)">
+                            <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       Foreground="#94A3B8" Text="&#xE711;" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- body -->
+                <ScrollViewer x:Name="BodyScroll" Grid.Row="1" MaxHeight="248" VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled" Padding="0,0,2,0">
+                    <StackPanel x:Name="BodyPanel" Margin="24,2,20,16" />
+                </ScrollViewer>
+
+                <!-- footer -->
+                <Border Grid.Row="2" BorderBrush="#EFF2F6" BorderThickness="0,1,0,0" Padding="18,7,10,8">
+                    <Grid>
+                        <TextBlock x:Name="FooterDictText" FontSize="11" Foreground="{StaticResource SoftBrush}"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="6,0,170,0" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="StarButton" Style="{StaticResource IconBtn}" ToolTip="收藏到生词本">
+                                <TextBlock x:Name="StarGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="16" Foreground="#94A3B8" Text="&#xE734;" />
+                            </Button>
+                            <Button x:Name="CopyButton" Style="{StaticResource IconBtn}" ToolTip="复制单词">
+                                <TextBlock x:Name="CopyGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="15" Foreground="#64748B" Text="&#xE8C8;" />
+                            </Button>
+                            <Button x:Name="SearchButton" Style="{StaticResource IconBtn}" ToolTip="在浏览器中搜索">
+                                <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15"
+                                           Foreground="#64748B" Text="&#xE721;" />
+                            </Button>
+                            <Button x:Name="SettingsButton" Style="{StaticResource TextActionBtn}" ToolTip="打开设置" Content="设置" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,4 @@
+[
+  {"word": "WordLens", "phonetic": "/ˈwɜːrdlenz/", "translation": "单词镜头（JSON 导入测试）", "tags": "test"},
+  {"headword": "astronaut", "ipa": "/ˈæstrənɔːt/", "meanings": ["宇航员", "航天员"], "pos": "n."}
+]

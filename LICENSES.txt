@@ -1,0 +1,48 @@
+WordLens — third-party notices
+================================
+
+WordLens application code
+-------------------------
+Copyright (c) 2026 WordLens contributors
+License: MIT License (see LICENSE)
+
+ECDICT 英汉词典数据
+-------------------
+Source: https://github.com/skywind3000/ECDICT
+License: MIT License
+Copyright (c) 2025 Linwei
+
+Files: dicts/builtin-en.wlcdb (derived database)
+
+CC-CEDICT 汉英词典数据
+----------------------
+Source: https://www.mdbg.net/chinese/dictionary?page=cc-cedict
+License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+License URL: https://creativecommons.org/licenses/by-sa/4.0/
+Copyright: CC-CEDICT contributors
+
+Files: dicts/builtin-zh.wlcdb (derived database)
+
+ipa-dict 国际音标数据
+---------------------
+Source: https://github.com/open-dict-data/ipa-dict
+License: MIT License
+Copyright (c) 2016 dohliam
+
+Usage: en_US IPA entries merged into dicts/builtin-en.wlcdb.
+
+.NET / WPF / Windows Forms (self-contained runtime)
+---------------------------------------------------
+Source: https://github.com/dotnet/runtime and https://github.com/dotnet/wpf
+License: MIT License
+Copyright (c) .NET Foundation and Contributors
+
+StarDict parser
+---------------
+Implemented for this project (src/WordLens/Import/StarDict.cs), no third-party code.
+
+Notes
+-----
+Dictionary data is distributed for offline personal use with WordLens.
+If you redistribute the dictionary databases, keep the attribution above and
+respect the CC BY-SA 4.0 license for CC-CEDICT (share-alike).

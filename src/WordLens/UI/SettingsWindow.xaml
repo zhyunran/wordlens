@@ -1,0 +1,386 @@
+<Window x:Class="WordLens.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WordLens 设置" Width="960" Height="700" MinWidth="820" MinHeight="600"
+        WindowStartupLocation="CenterScreen" Background="#F6F8FB"
+        FontFamily="Microsoft YaHei UI, Segoe UI" FontSize="13"
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
+    <Window.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderBrush" Value="#E7ECF2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="20,16,20,18" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,3,0,0" />
+        </Style>
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,7,16,8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1D4ED8" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#94A3B8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SecondaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#334155" />
+            <Setter Property="BorderBrush" Value="#D8DFE8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="13,6,13,7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="7"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F1F5F9" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#94A3B8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#334155" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="16,8,16,8" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#E7ECF2" BorderThickness="0,0,0,1" Padding="22,14,22,12">
+            <StackPanel>
+                <TextBlock Text="WordLens 双击查词" FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" />
+                <TextBlock Text="双击任意程序中的单词，弹出音标、释义与发音；支持 Edge PDF、Word、浏览器和词典导入"
+                           Style="{StaticResource Hint}" />
+            </StackPanel>
+        </Border>
+
+        <TabControl x:Name="Tabs" Grid.Row="1" Margin="16,12,16,8" Background="Transparent" BorderThickness="0">
+            <!-- ================= general ================= -->
+            <TabItem Header="常规">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,6,8,6">
+                    <StackPanel>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="查词方式" Style="{StaticResource SectionTitle}" />
+                                <CheckBox x:Name="ChkEnabled" Content="启用双击自动查词" Margin="0,10,0,0" FontSize="13.5" />
+                                <TextBlock Text="关闭后 WordLens 仍驻留托盘，可通过快捷键或托盘菜单手动查词。"
+                                           Style="{StaticResource Hint}" Margin="24,3,0,0" />
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="双击后等待（毫秒）" Style="{StaticResource FieldLabel}" />
+                                    <Slider x:Name="SldDelay" Grid.Column="1" Minimum="60" Maximum="500"
+                                            TickFrequency="10" IsSnapToTickEnabled="True" Margin="16,0,16,0"
+                                            VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtDelay" Grid.Column="2" Width="46" TextAlignment="Right"
+                                               Foreground="#475569" />
+                                </Grid>
+                                <TextBlock Text="等待目标程序完成选词后再读取。如果出现少量程序选词失败，可适当调大。"
+                                           Style="{StaticResource Hint}" Margin="0,0,0,0" />
+                                <CheckBox x:Name="ChkAutoSpeak" Content="弹窗时自动朗读单词" Margin="0,12,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="弹窗行为" Style="{StaticResource SectionTitle}" />
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="自动关闭（秒）" Style="{StaticResource FieldLabel}" />
+                                    <Slider x:Name="SldTimeout" Grid.Column="1" Minimum="5" Maximum="120"
+                                            TickFrequency="5" IsSnapToTickEnabled="True" Margin="16,0,16,0"
+                                            VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtTimeout" Grid.Column="2" Width="46" TextAlignment="Right"
+                                               Foreground="#475569" />
+                                </Grid>
+                                <CheckBox x:Name="ChkShowEnDef" Content="显示英文释义（双解释义）" Margin="0,12,0,0" />
+                                <CheckBox x:Name="ChkShowTags" Content="显示考试标签与词频标记（中考/高考/CET/牛津/柯林斯）" Margin="0,8,0,0" />
+                                <CheckBox x:Name="ChkCloseOutside" Content="点击弹窗外部时关闭" Margin="0,8,0,0" />
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="最大选中长度" Style="{StaticResource FieldLabel}" />
+                                    <TextBox x:Name="TxtMaxChars" Grid.Column="1" Width="90" Margin="16,0,0,0"
+                                             HorizontalAlignment="Left" Padding="6,4" />
+                                </Grid>
+                                <TextBlock Text="超过该长度的选区不会弹窗，避免整段文字误触发。" Style="{StaticResource Hint}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="启动与历史" Style="{StaticResource SectionTitle}" />
+                                <CheckBox x:Name="ChkAutostart" Content="登录 Windows 时自动启动 WordLens" Margin="0,10,0,0" />
+                                <CheckBox x:Name="ChkHistory" Content="记录查词历史（用于生词本与历史列表）" Margin="0,8,0,0" />
+                                <Button x:Name="BtnOpenDictFolder" Content="打开用户词典目录" Style="{StaticResource SecondaryBtn}"
+                                        HorizontalAlignment="Left" Margin="0,14,0,0" Click="BtnOpenDictFolder_Click" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ================= dictionaries ================= -->
+            <TabItem Header="词典">
+                <Grid Margin="4,8,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="已安装词典" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="排名靠前的词典优先显示在弹窗中。内置 ECDICT（英汉，含音标/英文释义）与 CC-CEDICT（汉英，含拼音）；可导入 StarDict、CSV/TSV、JSON 或 .wlcdb。"
+                                   Style="{StaticResource Hint}" />
+                    </StackPanel>
+                    <DataGrid x:Name="DgDicts" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
+                              CanUserDeleteRows="False" CanUserReorderColumns="False" IsReadOnly="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="34"
+                              Background="White" BorderBrush="#E7ECF2" BorderThickness="1"
+                              HorizontalGridLinesBrush="#F1F5F9" SelectionMode="Single" FontSize="13">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="启用" Binding="{Binding Enabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="52" />
+                            <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="语言" Binding="{Binding LanguageText}" Width="70" IsReadOnly="True" />
+                            <DataGridTextColumn Header="词条数" Binding="{Binding CountText}" Width="90" IsReadOnly="True" />
+                            <DataGridTextColumn Header="优先级" Binding="{Binding PriorityText}" Width="70" IsReadOnly="True" />
+                            <DataGridTextColumn Header="来源" Binding="{Binding SourceText}" Width="200" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Grid.Row="2" Margin="0,10,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BtnImport" Content="导入词典…" Style="{StaticResource PrimaryBtn}" Click="BtnImport_Click" />
+                                <Button x:Name="BtnDeleteDict" Content="删除" Style="{StaticResource SecondaryBtn}" Margin="12,0,8,0" Click="BtnDeleteDict_Click" />
+                                <Button x:Name="BtnUp" Content="提高优先级" Style="{StaticResource SecondaryBtn}" Click="BtnUp_Click" />
+                                <Button x:Name="BtnDown" Content="降低优先级" Style="{StaticResource SecondaryBtn}" Click="BtnDown_Click" />
+                                <Button x:Name="BtnOpenDictFolder2" Content="打开目录" Style="{StaticResource SecondaryBtn}" Click="BtnOpenDictFolder_Click" />
+                            </StackPanel>
+                            <ProgressBar x:Name="ImportProgress" Height="3" Margin="0,12,0,0" Visibility="Collapsed"
+                                         IsIndeterminate="True" Foreground="#2563EB" Background="#DBEAFE" BorderThickness="0" />
+                            <TextBlock x:Name="TxtDictStatus" Style="{StaticResource Hint}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ================= wordbook ================= -->
+            <TabItem Header="生词本">
+                <Grid Margin="4,8,8,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0">
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="收藏的单词" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="查词弹窗点击星标即可收藏。" Style="{StaticResource Hint}" />
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button x:Name="BtnRefreshFav" Content="刷新" Style="{StaticResource SecondaryBtn}" Click="BtnRefreshFav_Click" />
+                            <Button x:Name="BtnSpeakFav" Content="朗读" Style="{StaticResource SecondaryBtn}" Click="BtnSpeakFav_Click" />
+                            <Button x:Name="BtnRemoveFav" Content="删除收藏" Style="{StaticResource SecondaryBtn}" Click="BtnRemoveFav_Click" />
+                        </StackPanel>
+                        <ListView x:Name="LstFavorites" Background="White" BorderBrush="#E7ECF2" BorderThickness="1">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="单词" Width="170" DisplayMemberBinding="{Binding Display}" />
+                                    <GridViewColumn Header="词典" Width="170" DisplayMemberBinding="{Binding Dict}" />
+                                    <GridViewColumn Header="释义" Width="360" DisplayMemberBinding="{Binding Translation}" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </DockPanel>
+                    <DockPanel Grid.Row="1" Margin="0,6,0,0">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="最近查词" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                            <Button x:Name="BtnClearHistory" Content="清空历史" Style="{StaticResource SecondaryBtn}" Margin="20,0,0,0" Click="BtnClearHistory_Click" />
+                        </StackPanel>
+                        <ListView x:Name="LstHistory" Background="White" BorderBrush="#E7ECF2" BorderThickness="1">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="单词" Width="170" DisplayMemberBinding="{Binding Display}" />
+                                    <GridViewColumn Header="次数" Width="70" DisplayMemberBinding="{Binding Count}" />
+                                    <GridViewColumn Header="来源程序" Width="170" DisplayMemberBinding="{Binding Source}" />
+                                    <GridViewColumn Header="时间" Width="180" DisplayMemberBinding="{Binding TimeText}" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ================= advanced ================= -->
+            <TabItem Header="高级">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,6,8,6">
+                    <StackPanel>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="全局快捷键" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="选中文字后按快捷键，立即在鼠标位置弹出查词窗口（无需双击）。" Style="{StaticResource Hint}" />
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <TextBox x:Name="TxtHotkey" Width="180" Padding="7,5" VerticalContentAlignment="Center" />
+                                    <Button x:Name="BtnApplyHotkey" Content="应用" Style="{StaticResource SecondaryBtn}" Margin="10,0,0,0" Click="BtnApplyHotkey_Click" />
+                                    <TextBlock x:Name="TxtHotkeyStatus" Foreground="#64748B" VerticalAlignment="Center" Margin="12,0,0,0" />
+                                </StackPanel>
+                                <TextBlock Text="输入查词（可打字搜索）：默认 Ctrl+Shift+Space，按快捷键弹出输入框。" 
+                                           Style="{StaticResource Hint}" Margin="0,14,0,0" />
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <TextBox x:Name="TxtSearchHotkey" Width="180" Padding="7,5" VerticalContentAlignment="Center" />
+                                    <Button x:Name="BtnApplySearchHotkey" Content="应用" Style="{StaticResource SecondaryBtn}" Margin="10,0,0,0" Click="BtnApplySearchHotkey_Click" />
+                                    <TextBlock x:Name="TxtSearchHotkeyStatus" Foreground="#64748B" VerticalAlignment="Center" Margin="12,0,0,0" />
+                                </StackPanel>
+                                <TextBlock Text="也可以用 Copilot 作为输入查词快捷键（Win+Shift+F23）；若被系统占用会注册失败，详见日志。"
+                                           Style="{StaticResource Hint}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="诊断" Style="{StaticResource SectionTitle}" />
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <Button x:Name="BtnTestCapture" Content="测试选区捕获" Style="{StaticResource SecondaryBtn}" Click="BtnTestCapture_Click" />
+                                    <Button x:Name="BtnTestTts" Content="测试发音" Style="{StaticResource SecondaryBtn}" Click="BtnTestTts_Click" />
+                                    <Button x:Name="BtnOpenLogs" Content="打开日志目录" Style="{StaticResource SecondaryBtn}" Click="BtnOpenLogs_Click" />
+                                </StackPanel>
+                                <TextBox x:Name="TxtCaptureResult" Margin="0,10,0,0" Height="96" IsReadOnly="True"
+                                         TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                         Background="#F8FAFC" BorderBrush="#E2E8F0" Padding="8,6" FontFamily="Consolas, Microsoft YaHei UI" FontSize="12" />
+                                <TextBlock Text="点击“测试选区捕获”后 3 秒内切换到目标程序并选中文字，程序会读取并显示识别结果。"
+                                           Style="{StaticResource Hint}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="排除的程序" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="每行一个进程名（不含 .exe 也可以），支持 * 通配符。双击这些程序中的词不会弹窗。" Style="{StaticResource Hint}" />
+                                <TextBox x:Name="TxtExcluded" Margin="0,10,0,0" Height="110" AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto" Padding="8,6" FontFamily="Consolas, Microsoft YaHei UI"
+                                         Background="White" BorderBrush="#D8DFE8" />
+                                <Button x:Name="BtnSaveExcluded" Content="保存排除列表" Style="{StaticResource SecondaryBtn}"
+                                        HorizontalAlignment="Left" Margin="0,10,0,0" Click="BtnSaveExcluded_Click" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="重置" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="恢复所有设置为默认值（不会删除已导入的词典和生词本）。" Style="{StaticResource Hint}" />
+                                <Button x:Name="BtnReset" Content="恢复默认设置" Style="{StaticResource SecondaryBtn}"
+                                        HorizontalAlignment="Left" Margin="0,10,0,0" Click="BtnReset_Click" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ================= about ================= -->
+            <TabItem Header="关于">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,6,8,6">
+                    <StackPanel>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="WordLens 1.0.0" Style="{StaticResource SectionTitle}" FontSize="17" />
+                                <TextBlock Text="Windows 上的 macOS「查词 / Look Up」体验：在任意程序中双击选词，即时弹出音标、中文释义、英文释义、发音与词典来源。"
+                                           Style="{StaticResource Hint}" Margin="0,6,0,0" />
+                                <TextBlock x:Name="TxtAboutPaths" Style="{StaticResource Hint}" Margin="0,10,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="词典数据来源" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="• ECDICT 英汉词典（github.com/skywind3000/ECDICT）：音标、中文释义、英文释义、考试标签、词频。"
+                                           Style="{StaticResource Hint}" Margin="0,6,0,0" />
+                                <TextBlock Text="• CC-CEDICT 汉英词典（cc-cedict.org，CC BY-SA 4.0）：拼音与英文释义，简体/繁体。"
+                                           Style="{StaticResource Hint}" />
+                                <TextBlock Text="• ipa-dict 国际音标数据（github.com/open-dict-data/ipa-dict，MIT）：为英文词条补充标准美式 IPA。"
+                                           Style="{StaticResource Hint}" />
+                                <TextBlock Text="• 内置词典数据随程序离线使用，不联网、不上传任何文字。"
+                                           Style="{StaticResource Hint}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="技术说明" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="双击检测使用全局低级鼠标钩子；选区读取优先使用 Windows UI Automation，PDF 等不暴露选区的程序使用带剪贴板保护的 Ctrl+C 回退（读取后恢复原剪贴板）。发音使用 Windows 内置 SAPI 语音（Zira/David/Huihui）。"
+                                           Style="{StaticResource Hint}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#E7ECF2" BorderThickness="0,1,0,0" Padding="18,10">
+            <Grid>
+                <TextBlock x:Name="TxtStatus" Foreground="#64748B" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="BtnClose" Content="关闭" Style="{StaticResource SecondaryBtn}" Click="BtnClose_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

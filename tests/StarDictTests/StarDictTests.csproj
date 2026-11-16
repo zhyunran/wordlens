@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    
+    
+
+    <!-- The reader is compiled with nullable annotations and must stay warning-free. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <AssemblyName>StarDictTests</AssemblyName>
+    <RootNamespace>WordLens.Import.Tests</RootNamespace>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\WordLens\Import\StarDict.cs" Link="StarDict.cs" />
+  </ItemGroup>
+
+</Project>
