@@ -57,7 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File installer\build-installer.ps
 1. 用 `csc` 编译 `installer\WordLensSetup.cs`（`/win32icon` 取应用图标）
    → 约 64 KB 外壳；
 2. 把 `publish\*` 全量复制到临时 payload，追加 `dicts\*.wlcdb`、根目录的
-   `README.md`/`README.zh.md`/`REPORT.md`/`LICENSES.txt`/`LICENSE`/
+   `README.md`/`README.en.md`/`REPORT.md`/`LICENSES.txt`/`LICENSE`/
    `THIRD-PARTY-NOTICES.md`/`CHANGELOG.md`/`uninstall.ps1`、以及 `docs\*.png`；
 3. 压缩 payload ZIP（耗时数分钟，约 138 MB）；
 4. 把 ZIP 追加到外壳之后，再写 16 字节尾标记 `WLZIP001` + int64 长度；
@@ -94,7 +94,7 @@ tests/*.json tests/*.png         # 测试中间产物
 ```
 
 应当包含：`src/`、`installer/`、`tests/StarDictTests/`、`tests/uihelper/`、
-`tests/fixtures/`、`tools/`、`scripts/`、`docs/`、`README.md`、`README.zh.md`、
+`tests/fixtures/`、`tools/`、`scripts/`、`docs/`、`README.md`、`README.en.md`、
 `REPORT.md`、`PACKAGING.md`、`LICENSE`、`THIRD-PARTY-NOTICES.md`、
 `CHANGELOG.md`、`.gitignore`、`LICENSES.txt`、`install.ps1`、`uninstall.ps1`。
 
