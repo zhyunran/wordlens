@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.1 (2026-11-24)
+
+- PDF 浏览器选区与阅读器复制结果核对，改善旧选区和残缺文字造成的漏弹、错词。
+- 默认随 Windows 登录安静启动到托盘。移除定时工作集裁剪和强制垃圾回收。
+- Windows x64 安装 EXE 内置运行时和离线词典，可直接覆盖升级。
+
+- Verify browser PDF selections against the viewer's copied text and protect the clipboard during fallback.
+- Start quietly in the tray at Windows login. Remove periodic working-set trimming and forced garbage collection.
+- Ship a Windows x64 setup EXE with the desktop runtime and offline dictionaries.
+
 ## 1.0.0 (2026-10-26)
 
 First public release.

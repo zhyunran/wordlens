@@ -17,9 +17,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>false</PublishSingleFile>
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
-    <Version>1.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Version>1.0.1</Version>
     <Product>WordLens</Product>
     <Description>Windows double-click word lookup popup with IPA, translations and dictionary import</Description>
     <Company>WordLens</Company>
@@ -31,10 +29,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.36" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Favour a smaller GC heap over peak speed; popup latency is still fast. -->
-    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Update="Assets\wordlens.ico" CopyToOutputDirectory="PreserveNewest" />

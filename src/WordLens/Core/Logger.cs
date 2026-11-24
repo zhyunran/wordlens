@@ -71,7 +71,7 @@ namespace WordLens.Core
     public static class AppInfo
     {
         public const string Name = "WordLens";
-        public const string Version = "1.0.0";
+        public static readonly string Version = typeof(AppInfo).Assembly.GetName().Version.ToString(3);
         public const string DisplayName = "WordLens 双击查词";
         public const string ProjectUrl = "https://github.com/skywind3000/ECDICT";
         public const string CedictUrl = "https://www.mdbg.net/chinese/dictionary?page=cc-cedict";

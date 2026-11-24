@@ -139,7 +139,8 @@ namespace WordLens.Core
                     if (delay > 0) await Task.Delay(delay).ConfigureAwait(false);
                     if (gen != Volatile.Read(ref _generation)) return;
 
-                    CaptureResult cap = await _capture.CaptureAsync(hwnd, x, y).ConfigureAwait(false);
+                    CaptureResult cap = await _capture.CaptureAsync(hwnd, x, y,
+                        () => !_disposed && gen == Volatile.Read(ref _generation)).ConfigureAwait(false);
                     if (gen != Volatile.Read(ref _generation)) return;
 
                     if (cap == null || !cap.HasText)
@@ -310,7 +311,8 @@ namespace WordLens.Core
             {
                 try
                 {
-                    CaptureResult cap = await _capture.CaptureAsync(hwnd, x, y).ConfigureAwait(false);
+                    CaptureResult cap = await _capture.CaptureAsync(hwnd, x, y,
+                        () => !_disposed && gen == Volatile.Read(ref _generation)).ConfigureAwait(false);
                     if (gen != Volatile.Read(ref _generation)) return;
                     if (cap == null || !cap.HasText)
                     {

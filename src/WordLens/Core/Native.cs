@@ -44,6 +44,7 @@ namespace WordLens.Core
         public const uint KEYEVENTF_KEYUP = 0x0002;
         public const uint KEYEVENTF_UNICODE = 0x0004;
 
+        public const int VK_LBUTTON = 0x01;
         public const int VK_CONTROL = 0x11;
         public const int VK_MENU = 0x12;
         public const int VK_SHIFT = 0x10;
@@ -475,30 +476,6 @@ namespace WordLens.Core
                 Right = screen.WorkingArea.Right,
                 Bottom = screen.WorkingArea.Bottom
             };
-        }
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetProcessWorkingSetSize(IntPtr hProcess, IntPtr dwMinimumWorkingSetSize,
-            IntPtr dwMaximumWorkingSetSize);
-
-        /// <summary>
-        /// Ask Windows to trim the process working set to at most 128 MB.
-        /// This only pages out cold pages; it does not change behaviour, and
-        /// they are faulted back in on the next lookup. Kept modest (not
-        /// EmptyWorkingSet) so the popup stays responsive.
-        /// </summary>
-        public static bool TrimWorkingSet(int maxMegabytes = 128)
-        {
-            try
-            {
-                using (var p = System.Diagnostics.Process.GetCurrentProcess())
-                {
-                    IntPtr min = (IntPtr)(64L * 1024 * 1024);
-                    IntPtr max = (IntPtr)(Math.Max(96, maxMegabytes) * 1024L * 1024L);
-                    return SetProcessWorkingSetSize(p.Handle, min, max);
-                }
-            }
-            catch { return false; }
         }
     }
 }

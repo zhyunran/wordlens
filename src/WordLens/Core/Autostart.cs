@@ -8,6 +8,9 @@ namespace WordLens.Core
     {
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string ValueName = "WordLens";
+        public const string StartupArgument = "--startup";
+
+        private static string StartupCommand => "\"" + AppPaths.ExePath + "\" " + StartupArgument;
 
         public static bool IsEnabled()
         {
@@ -17,9 +20,7 @@ namespace WordLens.Core
                 {
                     if (k == null) return false;
                     string v = k.GetValue(ValueName) as string;
-                    if (string.IsNullOrWhiteSpace(v)) return false;
-                    string path = v.Trim().Trim('"');
-                    return string.Equals(path, AppPaths.ExePath, StringComparison.OrdinalIgnoreCase);
+                    return string.Equals(v, StartupCommand, StringComparison.OrdinalIgnoreCase);
                 }
             }
             catch { return false; }
@@ -32,9 +33,10 @@ namespace WordLens.Core
                 using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunKey, true))
                 {
                     if (k == null) return false;
-                    if (enabled)
-                        k.SetValue(ValueName, "\"" + AppPaths.ExePath + "\"", RegistryValueKind.String);
-                    else if (k.GetValue(ValueName) != null)
+                    string previous = k.GetValue(ValueName) as string;
+                    if (enabled && !string.Equals(previous, StartupCommand, StringComparison.OrdinalIgnoreCase))
+                        k.SetValue(ValueName, StartupCommand, RegistryValueKind.String);
+                    else if (!enabled && previous != null)
                         k.DeleteValue(ValueName, false);
                 }
                 return true;

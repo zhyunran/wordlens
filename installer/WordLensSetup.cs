@@ -8,7 +8,7 @@
 //   csc /target:winexe /platform:anycpu /optimize+ /win32icon:... /win32manifest:installer.manifest
 //       /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll
 //       /r:System.IO.Compression.dll /r:System.IO.Compression.FileSystem.dll
-//       /out:WordLensSetup.exe WordLensSetup.cs
+//       /out:WordLensSetup.exe WordLensSetup.cs VersionInfo.cs
 // then append the payload ZIP + footer (see build-installer.ps1).
 //
 // Per-user only: installs into %LOCALAPPDATA%\WordLens, writes HKCU Run, creates
@@ -30,15 +30,13 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("WordLens")]
 [assembly: AssemblyDescription("WordLens per-user installer")]
 [assembly: AssemblyCompany("WordLens")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 
 namespace WordLensSetup
 {
     internal static class Program
     {
         public const string AppName = "WordLens";
-        public const string AppVersion = "1.0.0";
+        public static readonly string AppVersion = typeof(Program).Assembly.GetName().Version.ToString(3);
         private const string ZipMagic = "WLZIP001";
 
         [STAThread]
@@ -370,13 +368,14 @@ namespace WordLensSetup
         public static void Install(string installDir, IInstallProgress progress, bool launch)
         {
             Program.Log("Install start: dir=" + installDir + " launch=" + launch);
-            StopApp();
+            bool upgrading = File.Exists(Path.Combine(installDir, Program.AppName + ".exe"));
             string tempZip = Path.Combine(Path.GetTempPath(),
                 "WordLensPayload-" + Guid.NewGuid().ToString("N") + ".zip");
             try
             {
                 if (progress != null) progress.Report(1, "正在读取安装数据…");
                 ExtractPayloadToTemp(tempZip);
+                StopApp();
                 if (progress != null) progress.Report(3, "正在解压程序文件…");
                 ExtractZip(tempZip, installDir, progress);
                 if (!File.Exists(Path.Combine(installDir, Program.AppName + ".exe")))
@@ -384,7 +383,7 @@ namespace WordLensSetup
 
                 if (progress != null) progress.Report(96, "正在创建快捷方式…");
                 CreateShortcuts(installDir);
-                SetAutostart(installDir);
+                SetAutostart(installDir, upgrading);
                 WriteUninstallEntry(installDir);
                 if (progress != null) progress.Report(99, "正在完成安装…");
 
@@ -500,6 +499,7 @@ namespace WordLensSetup
             {
                 FileName = exe,
                 WorkingDirectory = installDir,
+                Arguments = "--startup",
                 UseShellExecute = true
             };
             Process.Start(psi);
@@ -550,16 +550,16 @@ namespace WordLensSetup
             catch { }
         }
 
-        private static void SetAutostart(string installDir)
+        private static void SetAutostart(string installDir, bool upgrading)
         {
             try
             {
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\Run"))
                 {
-                    if (key != null)
+                    if (key != null && (!upgrading || key.GetValue(Program.AppName) != null))
                         key.SetValue(Program.AppName,
-                            "\"" + Path.Combine(installDir, Program.AppName + ".exe") + "\"");
+                            "\"" + Path.Combine(installDir, Program.AppName + ".exe") + "\" --startup");
                 }
             }
             catch (Exception ex) { Program.Log("Set autostart failed: " + ex.Message); }

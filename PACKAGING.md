@@ -49,8 +49,10 @@ dotnet run --project tests\StarDictTests\StarDictTests.csproj -c Release
 ## 3. 生成安装器
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File installer\build-installer.ps1 -Version 1.0.0
+powershell -NoProfile -ExecutionPolicy Bypass -File installer\build-installer.ps1
 ```
+
+安装器从已发布的 `WordLens.dll` 读取版本。手动传入 `-Version` 时，脚本会校验它与程序一致。
 
 脚本做的事：
 

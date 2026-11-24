@@ -26,7 +26,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'installer build failed' }
 
     Write-Host ''
-    Write-Host 'Done. Installer: dist\WordLens-1.0.0-Setup.exe'
+    Write-Host 'Done. See the installer and SHA-256 file in dist.'
 }
 finally {
     Pop-Location

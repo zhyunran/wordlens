@@ -14,29 +14,32 @@ namespace WordLens.Core
 
         public bool HadContent { get; private set; }
 
+        public uint Sequence { get; private set; }
+
         public string Text { get; private set; }
 
-        public bool HasText => !string.IsNullOrEmpty(Text);
+        public bool HasText => Text != null;
 
-        private ClipboardSnapshot(bool captured, bool hadContent, string text)
+        private ClipboardSnapshot(bool captured, bool hadContent, string text, uint sequence)
         {
             Captured = captured;
             HadContent = hadContent;
             Text = text;
+            Sequence = sequence;
         }
 
         /// <summary>Reads the current clipboard. <see cref="Captured"/> is false if it stayed locked.</summary>
         public static ClipboardSnapshot Take()
         {
-            if (!ClipboardCompat.TrySnapshot(out bool hadContent, out string text))
-                return new ClipboardSnapshot(false, false, null);
-            return new ClipboardSnapshot(true, hadContent, text);
+            if (!ClipboardCompat.TrySnapshot(out bool hadContent, out string text, out uint sequence))
+                return new ClipboardSnapshot(false, false, null, 0);
+            return new ClipboardSnapshot(true, hadContent, text, sequence);
         }
 
         /// <summary>Puts the captured text back; retries a few times because the clipboard may be busy.</summary>
-        public bool Restore()
+        public bool Restore(uint expectedSequence)
         {
-            if (!Captured)
+            if (!Captured || (HadContent && !HasText))
             {
                 Log.Warn("Clipboard restore skipped: snapshot was not captured");
                 return false;
@@ -45,7 +48,9 @@ namespace WordLens.Core
             {
                 try
                 {
-                    if (HasText ? ClipboardCompat.TrySetText(Text) : ClipboardCompat.TryClear())
+                    if (Native.GetClipboardSequenceNumber() != expectedSequence) return false;
+                    if (HasText ? ClipboardCompat.TrySetText(Text, expectedSequence) :
+                        ClipboardCompat.TryClear(expectedSequence))
                         return true;
                 }
                 catch (Exception ex)

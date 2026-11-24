@@ -4,7 +4,7 @@ param(
     [string]$PublishDir = (Join-Path $PSScriptRoot '..\publish'),
     [string]$DataDir = (Join-Path $PSScriptRoot '..\data\build'),
     [string]$OutDir = (Join-Path $PSScriptRoot '..\dist'),
-    [string]$Version = '1.0.0'
+    [string]$Version
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,6 +12,11 @@ $repo = Resolve-Path (Join-Path $PSScriptRoot '..')
 $PublishDir = (Resolve-Path $PublishDir).Path
 $DataDir = (Resolve-Path $DataDir).Path
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+$assembly = Get-Item -LiteralPath (Join-Path $PublishDir 'WordLens.dll')
+$fileVersion = $assembly.VersionInfo
+$payloadVersion = '{0}.{1}.{2}' -f $fileVersion.FileMajorPart, $fileVersion.FileMinorPart, $fileVersion.FileBuildPart
+if (-not $Version) { $Version = $payloadVersion }
+if ($Version -ne $payloadVersion) { throw "Installer version $Version does not match payload version $payloadVersion" }
 
 $csc = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 if (!(Test-Path $csc)) { throw "C# compiler not found: $csc" }
@@ -28,6 +33,11 @@ New-Item -ItemType Directory -Force -Path $stubDir, $payloadDir | Out-Null
 
 try {
     Write-Host 'Compiling installer stub...'
+    $versionSource = Join-Path $stubDir 'VersionInfo.cs'
+    @(
+        '[assembly: System.Reflection.AssemblyVersion("' + $Version + '.0")]'
+        '[assembly: System.Reflection.AssemblyFileVersion("' + $Version + '.0")]'
+    ) | Set-Content -LiteralPath $versionSource -Encoding ASCII
     $refs = @(
         '/r:System.dll',
         '/r:System.Core.dll',
@@ -36,7 +46,7 @@ try {
         ('/r:"' + $compression.FullName + '"'),
         ('/r:"' + $compressionFs.FullName + '"')
     )
-    & $csc /nologo /target:winexe /platform:anycpu /optimize+ /win32icon:"$repo\src\WordLens\Assets\wordlens.ico" /win32manifest:"$PSScriptRoot\installer.manifest" $refs /out:"$stubDir\WordLensSetup.exe" "$PSScriptRoot\WordLensSetup.cs"
+    & $csc /nologo /target:winexe /platform:anycpu /optimize+ /win32icon:"$repo\src\WordLens\Assets\wordlens.ico" /win32manifest:"$PSScriptRoot\installer.manifest" $refs /out:"$stubDir\WordLensSetup.exe" "$PSScriptRoot\WordLensSetup.cs" "$versionSource"
     if ($LASTEXITCODE -ne 0) { throw "csc failed with exit code $LASTEXITCODE" }
     $stub = Join-Path $stubDir 'WordLensSetup.exe'
     Write-Host ("Stub: {0:N0} bytes" -f (Get-Item $stub).Length)
@@ -47,7 +57,7 @@ try {
     Copy-Item (Join-Path $DataDir 'builtin-en.wlcdb') (Join-Path $payloadDir 'dicts\builtin-en.wlcdb') -Force
     Copy-Item (Join-Path $DataDir 'builtin-zh.wlcdb') (Join-Path $payloadDir 'dicts\builtin-zh.wlcdb') -Force
 
-    $docsFiles = @('README.md', 'README.zh.md', 'REPORT.md', 'LICENSES.txt', 'LICENSE', 'THIRD-PARTY-NOTICES.md', 'CHANGELOG.md', 'uninstall.ps1')
+    $docsFiles = @('README.md', 'README.en.md', 'REPORT.md', 'LICENSES.txt', 'LICENSE', 'THIRD-PARTY-NOTICES.md', 'CHANGELOG.md', 'uninstall.ps1')
     foreach ($f in $docsFiles) {
         $src = Join-Path $repo $f
         if (Test-Path $src) { Copy-Item $src $payloadDir -Force }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,7 +31,6 @@ namespace WordLens
         private HotkeyManager _hotkey;
         private HotkeyManager _searchHotkey;
         private SearchWindow _searchWindow;
-        private DispatcherTimer _memoryTimer;
         private SettingsWindow _settingsWindow;
         private Mutex _mutex;
         private EventWaitHandle _showSettingsEvent;
@@ -49,6 +47,7 @@ namespace WordLens
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            bool quietStartup = HasArg(e.Args, Autostart.StartupArgument);
             AppPaths.EnsureCreated();
             Log.Init();
             DispatcherUnhandledException += (s, args) =>
@@ -68,13 +67,14 @@ namespace WordLens
                     Shutdown(exitCode);
                     return;
                 }
-                StartTrayMode(e.Args);
+                StartTrayMode(e.Args, quietStartup);
             }
             catch (Exception ex)
             {
                 Log.Error("Startup failed", ex);
-                MessageBox.Show("WordLens 启动失败：" + ex.Message + "\n\n日志：" + AppPaths.LogDir,
-                    "WordLens", MessageBoxButton.OK, MessageBoxImage.Error);
+                if (!quietStartup)
+                    MessageBox.Show("WordLens 启动失败：" + ex.Message + "\n\n日志：" + AppPaths.LogDir,
+                        "WordLens", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown(1);
             }
         }
@@ -301,13 +301,14 @@ namespace WordLens
         // ------------------------------------------------------------------
         // Tray mode
         // ------------------------------------------------------------------
-        private void StartTrayMode(string[] args)
+        private void StartTrayMode(string[] args, bool quietStartup)
         {
             _mutex = new Mutex(true, "Local\\WordLens.SingleInstance", out bool createdNew);
             if (!createdNew)
             {
-                SignalExistingInstance();
-                Log.Info("another WordLens instance is running; requested settings window");
+                if (!quietStartup) SignalExistingInstance();
+                Log.Info(quietStartup ? "another WordLens instance is already running" :
+                    "another WordLens instance is running; requested settings window");
                 Shutdown(0);
                 return;
             }
@@ -362,26 +363,25 @@ namespace WordLens
             _searchHotkey.HotkeyPressed += (s, e) => ShowSearch();
             ApplyHotkey();
 
-            _memoryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
-            _memoryTimer.Tick += (s, e) => TrimMemoryIfIdle();
-            _memoryTimer.Start();
-
-            if (IsInstalledLocation() && _settings.Autostart != Autostart.IsEnabled())
+            if (IsInstalledLocation())
                 Autostart.SetEnabled(_settings.Autostart);
 
-            if (!_mouse.Start())
+            if (!_mouse.Start() && !quietStartup)
                 _tray.ShowBalloon("WordLens", "全局鼠标钩子启动失败，请查看日志：" + AppPaths.LogDir);
 
             if (!_settings.FirstRunDone)
             {
                 _settings.FirstRunDone = true;
                 _settings.Save();
-                _tray.ShowBalloon("WordLens 已就绪", "在任意程序中双击一个单词，即可查看音标、释义和发音。");
-                if (IsInstalledLocation()) ShowSettings();
+                if (!quietStartup)
+                {
+                    _tray.ShowBalloon("WordLens 已就绪", "在任意程序中双击一个单词，即可查看音标、释义和发音。");
+                    if (IsInstalledLocation()) ShowSettings();
+                }
             }
 
             Log.Info("WordLens tray mode ready. enabled=" + _settings.Enabled +
-                     " dicts=" + _dicts.Infos.Count + " autostart=" + Autostart.IsEnabled());
+                     " dicts=" + _dicts.Infos.Count + " autostart=" + Autostart.IsEnabled() + " quietStartup=" + quietStartup);
 
             if (HasArg(args, "--show-settings")) ShowSettings();
             if (HasArg(args, "--show-search")) ShowSearch();
@@ -535,29 +535,6 @@ namespace WordLens
             }
         }
 
-        /// <summary>Idle memory trim: Windows keeps the working set high after a lookup burst.</summary>
-        private void TrimMemoryIfIdle()
-        {
-            try
-            {
-                bool popupClosed = _popup == null || !_popup.IsShown;
-                bool searchClosed = _searchWindow == null || !_searchWindow.IsVisible;
-                bool settingsClosed = _settingsWindow == null || !_settingsWindow.IsVisible;
-                if (!popupClosed || !searchClosed || !settingsClosed) return;
-
-                long before = Process.GetCurrentProcess().WorkingSet64;
-                if (before < 188743680) return; // 180 MB
-                GC.Collect(2, GCCollectionMode.Optimized, false, false);
-                bool ok = Native.TrimWorkingSet();
-                long after = Process.GetCurrentProcess().WorkingSet64;
-                Log.Info("memory trim: " + before / 1048576 + " MB -> " + after / 1048576 + " MB, ok=" + ok);
-            }
-            catch (Exception ex)
-            {
-                Log.Warn("memory trim failed: " + ex.Message);
-            }
-        }
-
         private void ToggleEnabled()
         {
             _settings.Enabled = !_settings.Enabled;
@@ -599,7 +576,6 @@ namespace WordLens
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Info("WordLens exiting");
-            try { _memoryTimer?.Stop(); } catch { }
             try { _controller?.Dispose(); } catch { }
             try { if (_searchWindow != null) _searchWindow.Close(); } catch { }
             try { _mouse?.Dispose(); } catch { }

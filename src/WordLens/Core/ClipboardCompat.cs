@@ -15,7 +15,10 @@ namespace WordLens.Core
     /// </summary>
     internal static class ClipboardCompat
     {
+        private const uint CF_TEXT = 1;
+        private const uint CF_OEMTEXT = 7;
         private const uint CF_UNICODETEXT = 13;
+        private const uint CF_LOCALE = 16;
         private const uint GMEM_MOVEABLE = 0x0002;
         private const int MaxTextChars = 4 * 1024 * 1024;
 
@@ -27,6 +30,9 @@ namespace WordLens.Core
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool EmptyClipboard();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetClipboardOwner();
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern IntPtr GetClipboardData(uint uFormat);
@@ -57,10 +63,11 @@ namespace WordLens.Core
         /// materialising any OLE/COM format. Returns false if the clipboard stays
         /// busy, or if the text is unreasonably large.
         /// </summary>
-        public static bool TrySnapshot(out bool hadContent, out string text)
+        public static bool TrySnapshot(out bool hadContent, out string text, out uint sequence)
         {
             hadContent = false;
             text = null;
+            sequence = 0;
             for (int attempt = 0; attempt < 5; attempt++)
             {
                 if (!OpenClipboard(IntPtr.Zero))
@@ -70,33 +77,19 @@ namespace WordLens.Core
                 }
                 try
                 {
-                    uint fmt = 0;
-                    int count = 0;
-                    while ((fmt = EnumClipboardFormats(fmt)) != 0)
+                    // The fallback can restore text only. Leave HTML, images, files and other
+                    // clipboard formats alone even when they also have a plain-text version.
+                    for (uint format = EnumClipboardFormats(0); format != 0; format = EnumClipboardFormats(format))
                     {
-                        count++;
-                        if (count > 4096) break;
-                    }
-                    hadContent = count > 0;
-                    if (!hadContent || !IsClipboardFormatAvailable(CF_UNICODETEXT))
-                        return true;
-
-                    IntPtr h = GetClipboardData(CF_UNICODETEXT);
-                    if (h == IntPtr.Zero) return true;
-                    IntPtr p = GlobalLock(h);
-                    if (p == IntPtr.Zero) return true;
-                    try
-                    {
-                        string s = Marshal.PtrToStringUni(p);
-                        if (s != null && s.Length > MaxTextChars)
+                        hadContent = true;
+                        if (format != CF_TEXT && format != CF_OEMTEXT &&
+                            format != CF_UNICODETEXT && format != CF_LOCALE)
                             return false;
-                        text = s;
                     }
-                    finally
-                    {
-                        GlobalUnlock(h);
-                    }
-                    return true;
+                    if (IsClipboardFormatAvailable(CF_UNICODETEXT) && !TryReadOpenClipboard(out text))
+                        return false;
+                    sequence = Native.GetClipboardSequenceNumber();
+                    return sequence != 0;
                 }
                 finally
                 {
@@ -106,46 +99,58 @@ namespace WordLens.Core
             return false;
         }
 
-        /// <summary>Reads CF_UNICODETEXT; used to poll the clipboard after sending Ctrl+C.</summary>
-        public static bool TryGetText(out string text)
+        /// <summary>Reads the viewer's copy and its sequence while the clipboard is open.</summary>
+        public static bool TryGetText(IntPtr source, out string text, out uint sequence)
         {
             text = null;
-            for (int attempt = 0; attempt < 3; attempt++)
+            sequence = 0;
+            if (!OpenClipboard(IntPtr.Zero)) return false;
+            try
             {
-                if (!OpenClipboard(IntPtr.Zero))
+                IntPtr owner = GetClipboardOwner();
+                if (owner == IntPtr.Zero) return false;
+                int sourcePid = Native.PidOf(source);
+                if (sourcePid == 0) return false;
+                if (Native.PidOf(owner) != sourcePid)
                 {
-                    Thread.Sleep(15);
-                    continue;
+                    string process = Native.ProcessNameOf(source);
+                    if (string.IsNullOrEmpty(process) || !string.Equals(process, Native.ProcessNameOf(owner),
+                        StringComparison.OrdinalIgnoreCase))
+                        return false;
                 }
-                try
-                {
-                    if (!IsClipboardFormatAvailable(CF_UNICODETEXT)) return false;
-                    IntPtr h = GetClipboardData(CF_UNICODETEXT);
-                    if (h == IntPtr.Zero) return false;
-                    IntPtr p = GlobalLock(h);
-                    if (p == IntPtr.Zero) return false;
-                    try
-                    {
-                        string s = Marshal.PtrToStringUni(p);
-                        if (string.IsNullOrEmpty(s)) return false;
-                        text = s;
-                        return true;
-                    }
-                    finally
-                    {
-                        GlobalUnlock(h);
-                    }
-                }
-                finally
-                {
-                    CloseClipboard();
-                }
+
+                bool hasText = IsClipboardFormatAvailable(CF_UNICODETEXT) && TryReadOpenClipboard(out text);
+                sequence = Native.GetClipboardSequenceNumber();
+                return hasText;
             }
-            return false;
+            finally
+            {
+                CloseClipboard();
+            }
+        }
+
+        private static bool TryReadOpenClipboard(out string text)
+        {
+            text = null;
+            IntPtr handle = GetClipboardData(CF_UNICODETEXT);
+            if (handle == IntPtr.Zero) return false;
+            IntPtr pointer = GlobalLock(handle);
+            if (pointer == IntPtr.Zero) return false;
+            try
+            {
+                string value = Marshal.PtrToStringUni(pointer);
+                if (value == null || value.Length > MaxTextChars) return false;
+                text = value;
+                return true;
+            }
+            finally
+            {
+                GlobalUnlock(handle);
+            }
         }
 
         /// <summary>Replaces the clipboard with the given text, without touching OLE at all.</summary>
-        public static bool TrySetText(string text)
+        public static bool TrySetText(string text, uint? expectedSequence = null)
         {
             if (text == null) return false;
             for (int attempt = 0; attempt < 5; attempt++)
@@ -158,7 +163,6 @@ namespace WordLens.Core
                 IntPtr hMem = IntPtr.Zero;
                 try
                 {
-                    if (!EmptyClipboard()) return false;
                     int bytes = (text.Length + 1) * 2;
                     hMem = GlobalAlloc(GMEM_MOVEABLE, (UIntPtr)bytes);
                     if (hMem == IntPtr.Zero) return false;
@@ -173,6 +177,9 @@ namespace WordLens.Core
                     {
                         GlobalUnlock(hMem);
                     }
+                    if (expectedSequence.HasValue && Native.GetClipboardSequenceNumber() != expectedSequence.Value)
+                        return false;
+                    if (!EmptyClipboard()) return false;
                     if (SetClipboardData(CF_UNICODETEXT, hMem) == IntPtr.Zero) return false;
                     hMem = IntPtr.Zero; // ownership transferred to the clipboard
                     return true;
@@ -187,7 +194,7 @@ namespace WordLens.Core
         }
 
         /// <summary>Empties the clipboard (used when the original state had no content).</summary>
-        public static bool TryClear()
+        public static bool TryClear(uint expectedSequence)
         {
             for (int attempt = 0; attempt < 5; attempt++)
             {
@@ -198,6 +205,7 @@ namespace WordLens.Core
                 }
                 try
                 {
+                    if (Native.GetClipboardSequenceNumber() != expectedSequence) return false;
                     if (EmptyClipboard()) return true;
                 }
                 finally
