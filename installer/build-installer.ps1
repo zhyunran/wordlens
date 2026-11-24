@@ -43,10 +43,16 @@ try {
         '/r:System.Core.dll',
         '/r:System.Drawing.dll',
         '/r:System.Windows.Forms.dll',
-        ('/r:"' + $compression.FullName + '"'),
-        ('/r:"' + $compressionFs.FullName + '"')
+        ('/r:' + $compression.FullName),
+        ('/r:' + $compressionFs.FullName)
     )
-    & $csc /nologo /target:winexe /platform:anycpu /optimize+ /win32icon:"$repo\src\WordLens\Assets\wordlens.ico" /win32manifest:"$PSScriptRoot\installer.manifest" $refs /out:"$stubDir\WordLensSetup.exe" "$PSScriptRoot\WordLensSetup.cs" "$versionSource"
+    $compilerArgs = @(
+        '/nologo', '/target:winexe', '/platform:anycpu', '/optimize+',
+        "/win32icon:$repo\src\WordLens\Assets\wordlens.ico",
+        "/win32manifest:$PSScriptRoot\installer.manifest",
+        "/out:$stubDir\WordLensSetup.exe"
+    )
+    & $csc @compilerArgs @refs "$PSScriptRoot\WordLensSetup.cs" $versionSource
     if ($LASTEXITCODE -ne 0) { throw "csc failed with exit code $LASTEXITCODE" }
     $stub = Join-Path $stubDir 'WordLensSetup.exe'
     Write-Host ("Stub: {0:N0} bytes" -f (Get-Item $stub).Length)
